@@ -4,18 +4,16 @@ import com.redhat.ukiservices.bholmes.jenkins.configuration.KafkaMetricsPluginCo
 import com.redhat.ukiservices.bholmes.jenkins.optionals.DockerCloudInfo;
 import com.redhat.ukiservices.bholmes.jenkins.optionals.KubernetesCloudInfo;
 import com.redhat.ukiservices.bholmes.jenkins.producer.MessageProducer;
-import hudson.Plugin;
 import hudson.PluginWrapper;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
-import hudson.slaves.Cloud;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.util.List;
 
-public class KafkaMetricsStartupListener extends Plugin {
+public class KafkaMetricsStartupListener {
 
     private static final String PROJECT_NAME_ENV = "PROJECT_NAME";
     private static final String KUBERNETES_NAMESPACE_ENV = "KUBERNETES_NAMESPACE";
@@ -47,17 +45,12 @@ public class KafkaMetricsStartupListener extends Plugin {
 
         if (Jenkins.getInstance().getPlugin("kubernetes") != null) {
             JSONArray kubeClouds = new KubernetesCloudInfo().getKubeClouds();
+            clouds.put("kubernetes", kubeClouds);
         }
 
-        if (Jenkins.getInstance().getPlugin("docker") != null) {
+        if (Jenkins.getInstance().getPlugin("docker-plugin") != null) {
             JSONArray dockerClouds = new DockerCloudInfo().getDockerClouds();
-        }
-
-        for (Cloud cloud : cloudlist) {
-            JSONObject cloudJson = new JSONObject();
-            cloudJson.put("name", cloud.name);
-            cloudJson.put("displayName", cloud.getDisplayName());
-            clouds.put(cloud.name, cloudJson);
+            clouds.put("docker", dockerClouds);
         }
 
         return clouds;

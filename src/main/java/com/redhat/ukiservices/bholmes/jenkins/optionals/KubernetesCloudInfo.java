@@ -41,12 +41,13 @@ public class KubernetesCloudInfo {
      * @param cloud
      * @return JSONObject
      */
-    private JSONObject getCloudConfig(KubernetesCloud cloud) {
-        JSONObject cloudConfig = new JSONObject();
+    private JSONArray getCloudConfig(KubernetesCloud cloud) {
+        JSONArray kubeClouds = new JSONArray();
 
         List<PodTemplate> templates = cloud.getTemplates();
 
         for (PodTemplate template : templates) {
+            JSONObject cloudConfig = new JSONObject();
             cloudConfig.put("displayName", template.getDisplayName());
             cloudConfig.put("name", template.getName());
             cloudConfig.put("label", template.getLabel());
@@ -55,9 +56,10 @@ public class KubernetesCloudInfo {
             cloudConfig.put("containers", this.getContainerConfig(template.getContainers()));
             cloudConfig.put("env", this.getEnvVars(template.getEnvVars()));
             cloudConfig.put("pullSecrets", this.getImagePullSecrets(template.getImagePullSecrets()));
+            kubeClouds.add(cloudConfig);
         }
 
-        return cloudConfig;
+        return kubeClouds;
     }
 
     /**
