@@ -40,9 +40,13 @@ public class KafkaMetricsStartupListenerTest {
         assertEquals(messages.size(), 1);
         JSONObject receivedPayload = JSONObject.fromObject(messages.get(0));
         assertNotNull(receivedPayload);
-        JSONArray dockerCloud = (JSONArray) receivedPayload.getJSONObject("clouds").getJSONArray("docker").get(0);
+        JSONArray dockerClouds = receivedPayload.getJSONObject("clouds").getJSONArray("docker");
+        assertNotNull(dockerClouds);
+        JSONObject dockerCloud = (JSONObject) dockerClouds.get(0);
         assertNotNull(dockerCloud);
-        assertEquals(2, dockerCloud.size());
+        assertEquals("docker swarm", dockerCloud.get("name"));
+        JSONArray templates = (JSONArray) dockerCloud.get("templates");
+        assertEquals(2, templates.size());
     }
 
 
@@ -58,6 +62,5 @@ public class KafkaMetricsStartupListenerTest {
         JSONObject andreCloud = (JSONObject) kubernetes.get(0);
         assertNotNull(andreCloud);
         assertEquals("andre-kubernetes-cloud", andreCloud.get("name"));
-
     }
 }
