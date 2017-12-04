@@ -18,14 +18,19 @@ public class DockerCloudInfo {
     }
 
     public JSONArray getDockerClouds() {
-        JSONArray dockerCloud = new JSONArray();
+        JSONArray dockerClouds = new JSONArray();
 
         for (Cloud cloud : Jenkins.getInstance().clouds) {
             if (cloud instanceof DockerCloud) {
-                dockerCloud.add(getCloudConfig((DockerCloud) cloud));
+                JSONObject cloudDefinition = new JSONObject();
+
+                cloudDefinition.put("name", cloud.name);
+                cloudDefinition.put("templates", getCloudConfig((DockerCloud) cloud));
+
+                dockerClouds.add(cloudDefinition);
             }
         }
-        return dockerCloud;
+        return dockerClouds;
     }
 
     /**
