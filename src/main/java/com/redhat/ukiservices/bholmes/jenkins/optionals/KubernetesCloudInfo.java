@@ -29,7 +29,14 @@ public class KubernetesCloudInfo {
 
         for (Cloud cloud : Jenkins.getInstance().clouds) {
             if (cloud instanceof KubernetesCloud) {
-                kubeClouds.add(getCloudConfig((KubernetesCloud) cloud));
+                JSONObject cloudDefinition = new JSONObject();
+
+                cloudDefinition.put("name", cloud.getDisplayName());
+                cloudDefinition.put("kubernetesURL", ((KubernetesCloud) cloud).getServerUrl());
+                cloudDefinition.put("jenkinsURL", ((KubernetesCloud) cloud).getJenkinsUrl());
+                cloudDefinition.put("templates", getCloudConfig((KubernetesCloud) cloud));
+
+                kubeClouds.add(cloudDefinition);
             }
         }
         return kubeClouds;
