@@ -19,6 +19,7 @@ import static org.junit.Assert.assertNotNull;
 public class KafkaMetricsPublisherStepTest {
 
     public static final String PUBLISH_TEST_TOPIC = "publish-test";
+
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
