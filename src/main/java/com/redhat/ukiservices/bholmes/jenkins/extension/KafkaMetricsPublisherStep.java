@@ -51,13 +51,13 @@ public class KafkaMetricsPublisherStep extends Step {
 
         @Override
         public String getFunctionName() {
-            return "kafkaMetricsPublisher";
+            return "kafkaPublisher";
         }
 
         @Nonnull
         @Override
         public String getDisplayName() {
-            return "Kafka Metrics Publisher";
+            return "Kafka Publisher";
         }
     }
 
@@ -81,7 +81,7 @@ public class KafkaMetricsPublisherStep extends Step {
             publishedContent.putAll(payload);
 
             try (MessageProducer producer = new MessageProducer()) {
-                producer.sendMessage(topic != null ? topic : KafkaMetricsPluginConfig.get().getMetricsTopic(), publishedContent.toString());
+                producer.sendMessage(topic != null ? topic : KafkaMetricsPluginConfig.get().getLogTopic(), publishedContent.toString());
             }
 
             return null;

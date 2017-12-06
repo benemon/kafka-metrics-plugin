@@ -36,7 +36,7 @@ public class KafkaMetricsPublisherStepTest {
             public void evaluate() throws Throwable {
                 WorkflowJob job = story.j.jenkins.createProject(WorkflowJob.class, "randomName" + System.currentTimeMillis());
 
-                job.setDefinition(new CpsFlowDefinition("kafkaMetricsPublisher(topic: 'publish-test', payload: [message: 'content'])", false));
+                job.setDefinition(new CpsFlowDefinition("kafkaPublisher(topic: 'publish-test', payload: [message: 'content'])", false));
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
