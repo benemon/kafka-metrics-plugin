@@ -80,7 +80,9 @@ public class KafkaMetricsPublisherStep extends Step {
             JSONObject publishedContent = new JSONObject();
             publishedContent.putAll(payload);
 
-            new MessageProducer().sendMessage(topic != null ? topic : KafkaMetricsPluginConfig.get().getTopic(), publishedContent.toString());
+            try (MessageProducer producer = new MessageProducer()) {
+                producer.sendMessage(topic != null ? topic : KafkaMetricsPluginConfig.get().getMetricsTopic(), publishedContent.toString());
+            }
 
             return null;
         }

@@ -6,7 +6,7 @@ import org.apache.kafka.clients.producer.ProducerRecord;
 
 import java.util.logging.Logger;
 
-public class MessageProducer {
+public class MessageProducer implements AutoCloseable {
 
     private static final Logger log = Logger.getLogger(MessageProducer.class.getName());
 
@@ -24,17 +24,27 @@ public class MessageProducer {
         }
     }
 
+    /**
+     * Send single line messages
+     *
+     * @param topic the topic to send the message to
+     * @param body  the message payload
+     */
     public void sendMessage(String topic, String body) {
         if (producer != null) {
-            try {
-                ProducerRecord<String, String> record = new ProducerRecord<>(topic, body);
-                producer.send(record);
-            } finally {
-                producer.close();
-            }
+            producer.send(new ProducerRecord<>(topic, body));
         } else {
             log.warning(PRODUCER_WARN_MSG);
         }
+    }
 
+    /**
+     * Close the producer
+     */
+    @Override
+    public void close() {
+        if (producer != null) {
+            producer.close();
+        }
     }
 }

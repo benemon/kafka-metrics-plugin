@@ -17,7 +17,10 @@
         <f:entry title="Client ID" field="clientId">
             <f:textbox/>
         </f:entry>
-        <f:entry title="Topic Name" field="topic">
+        <f:entry title="Metrics Topic Name" field="metricsTopic">
+            <f:textbox/>
+        </f:entry>
+        <f:entry title="Logging Topic Name" field="logTopic">
             <f:textbox/>
         </f:entry>
     </f:section>

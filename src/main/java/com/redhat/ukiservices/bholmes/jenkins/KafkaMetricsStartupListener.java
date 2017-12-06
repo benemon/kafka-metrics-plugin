@@ -25,7 +25,10 @@ public class KafkaMetricsStartupListener {
         payload.put("clouds", this.processClouds());
         payload.put("plugins", this.processPlugins());
 
-        new MessageProducer().sendMessage(KafkaMetricsPluginConfig.get().getTopic(), payload.toString());
+        try (MessageProducer producer = new MessageProducer()) {
+            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), payload.toString());
+        }
+
     }
 
     private JSONObject processEnvironment() {

@@ -22,17 +22,21 @@ public class KafkaMetricsPluginConfig extends GlobalConfiguration {
      * A string id to pass to the Kafka server when making requests in order to be able then to track the source of requests.
      */
     private String clientId;
+
     /**
-     * The topic of kafka to send the messages to
+     * The topic of kafka to send the metrics messages to
      */
-    private String topic;
+    private String metricsTopic;
+
+    /**
+     * The topic of kafka to send the log messages to
+     */
+    private String logTopic;
 
     /**
      * Default Constructor
      */
     public KafkaMetricsPluginConfig() {
-
-
         load();
     }
 
@@ -66,12 +70,20 @@ public class KafkaMetricsPluginConfig extends GlobalConfiguration {
         this.clientId = clientId;
     }
 
-    public String getTopic() {
-        return topic;
+    public String getMetricsTopic() {
+        return metricsTopic;
     }
 
-    public void setTopic(String topic) {
-        this.topic = topic;
+    public void setMetricsTopic(String metricsTopic) {
+        this.metricsTopic = metricsTopic;
+    }
+
+    public String getLogTopic() {
+        return logTopic;
+    }
+
+    public void setLogTopic(String logTopic) {
+        this.logTopic = logTopic;
     }
 
     /**
