@@ -38,7 +38,7 @@ public class JobEventsCollector extends RunListener<Run> {
     private JSONObject generateStartedPayload(Run run, TaskListener listener) {
         JSONObject startedPayload = new JSONObject();
 
-        startedPayload.put("name", run.getDisplayName());
+        startedPayload.put("name", run.getFullDisplayName());
         startedPayload.put("buildNumber", run.getNumber());
         startedPayload.put("project", this.getProjectName());
         startedPayload.put("jenkinsUrl", this.getJenkinsUrl(run, listener));
@@ -50,7 +50,7 @@ public class JobEventsCollector extends RunListener<Run> {
     private JSONObject generateCompletedPayload(Run run, TaskListener listener) {
         JSONObject completedPayload = new JSONObject();
 
-        completedPayload.put("name", run.getDisplayName());
+        completedPayload.put("name", run.getFullDisplayName());
         completedPayload.put("buildNumber", run.getNumber());
         completedPayload.put("project", this.getProjectName());
         completedPayload.put("jenkinsUrl", this.getJenkinsUrl(run, listener));
