@@ -33,6 +33,10 @@ If you want to publish information as part of a Pipeline step, you can use the f
 
 The `topic` parameter is optional, and if not provided, will publish payloads to the default logging topic.
 
+### Support
+
+This plugin is provided on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
 
 
 
