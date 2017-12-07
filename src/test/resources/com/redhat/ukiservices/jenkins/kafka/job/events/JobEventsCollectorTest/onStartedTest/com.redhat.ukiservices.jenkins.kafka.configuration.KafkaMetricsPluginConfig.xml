@@ -1,0 +1,8 @@
+<?xml version='1.0' encoding='UTF-8'?>
+<com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig
+        plugin="kafka-metrics-plugin@1.0-SNAPSHOT">
+    <bootstrapServers>localhost:5001</bootstrapServers>
+    <clientId>jenkins-test</clientId>
+    <metricsTopic>metrics</metricsTopic>
+    <logTopic>logs</logTopic>
+</com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig>
