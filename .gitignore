@@ -15,6 +15,7 @@
 .idea/encodings.xml
 .idea/misc.xml
 .idea/modules.xml
+.idea/*
 
 # Sensitive or high-churn files:
 .idea/dataSources.ids
