@@ -25,6 +25,7 @@
         <jenkins-credentials.version>2.1.11</jenkins-credentials.version>
         <http-core.version>4.4.5</http-core.version>
         <findbugs.version>3.0.1</findbugs.version>
+        <jacoco.version>0.7.9</jacoco.version>
     </properties>
 
     <name>Kafka Metrics Plugin :: Jenkins :: Red Hat UKI Services</name>
@@ -77,6 +78,20 @@
             <optional>true</optional>
         </dependency>
 
+        <!-- dependencies on Jenkins Pipeline plugins -->
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <version>2.15</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-step-api</artifactId>
+            <version>2.14</version>
+        </dependency>
+
+        <!-- test dependencies -->
 
         <dependency>
             <groupId>org.mockito</groupId>
@@ -119,6 +134,7 @@
             <artifactId>pipeline-model-definition</artifactId>
             <version>1.2.5</version>
             <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -126,6 +142,7 @@
             <artifactId>credentials-binding</artifactId>
             <version>1.13</version>
             <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -133,6 +150,7 @@
             <artifactId>ssh-credentials</artifactId>
             <version>1.13</version>
             <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -140,6 +158,7 @@
             <artifactId>credentials</artifactId>
             <version>2.1.13</version>
             <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -147,13 +166,7 @@
             <artifactId>structs</artifactId>
             <version>1.9</version>
             <optional>true</optional>
-        </dependency>
-
-        <dependency>
-            <groupId>org.jenkins-ci.plugins.workflow</groupId>
-            <artifactId>workflow-step-api</artifactId>
-            <version>2.14</version>
-            <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -161,6 +174,7 @@
             <artifactId>httpcore</artifactId>
             <version>${http-core.version}</version>
             <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
@@ -171,6 +185,34 @@
             <optional>true</optional>
         </dependency>
 
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>2.22</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>script-security</artifactId>
+            <version>1.34</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
     </dependencies>
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <configuration>
+                    <argLine>-Xms1024m -Xmx13808m</argLine>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
 
 </project>
