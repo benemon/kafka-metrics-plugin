@@ -46,7 +46,7 @@ public class JobLogCollector extends AbstractKafkaMetricsPluginRunListener {
 
             while ((sCurrentLine = br.readLine()) != null) {
                 JSONObject line = new JSONObject();
-                line.put("environment", this.processEnvironment(run, new LogTaskListener(log, Level.INFO)));
+                line.put("environment", this.processEnvironment(run));
                 line.put("lineNumber", lineNumber++);
                 line.put("message", sCurrentLine);
                 producer.sendMessage(KafkaMetricsPluginConfig.get().getLogTopic(), line.toString());

@@ -18,9 +18,11 @@ package com.redhat.ukiservices.jenkins.kafka.job.base;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
+import hudson.util.LogTaskListener;
 import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<Run> {
@@ -40,7 +42,7 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
      */
     protected JSONObject processEnvironment(Run run) {
 
-        return processEnvironment(run, null);
+        return processEnvironment(run, new LogTaskListener(log, Level.INFO));
     }
 
     /**
@@ -53,8 +55,8 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     protected JSONObject processEnvironment(Run run, TaskListener listener) {
         JSONObject environment = new JSONObject();
         environment.put("version", Jenkins.VERSION);
-        environment.put("jenkinsUrl", listener != null ? getJenkinsUrl(run, listener) : System.getenv(JENKINS_URL_ENV));
-        environment.put("job", listener != null ? getJenkinsJobName(run, listener) : System.getenv(JOB_NAME_ENV));
+        environment.put("jenkinsUrl", getJenkinsUrl(run, listener));
+        environment.put("job", getJenkinsJobName(run, listener));
         environment.put("namespace", this.getOpenShiftNamespace());
 
         return environment;
@@ -71,6 +73,11 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
         String url = null;
         try {
             url = run.getEnvironment(listener).get(JENKINS_URL_ENV);
+
+            // last ditch attempt to get something valid
+            if (url == null) {
+                url = System.getenv(JENKINS_URL_ENV);
+            }
         } catch (Exception e) {
             log.warning("Could not retrieve Jenkins URL");
         }
@@ -104,6 +111,11 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
             // last ditch attempt to get something valid
             if (job == null) {
                 job = run.getFullDisplayName().substring(0, run.getFullDisplayName().lastIndexOf("#") - 1);
+
+                // sigh
+                if (job == null) {
+                    job = System.getenv(JOB_NAME_ENV);
+                }
             }
 
         } catch (Exception e) {
