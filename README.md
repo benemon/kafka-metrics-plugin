@@ -13,7 +13,7 @@ A set of tasks and steps for Jenkins which publish:
 
 * Requires Minimum Jenkins version of 2.73.x *
 
-`mvn hpi:hpi`
+`mvn clean package`
 
 Install the resulting package as a plugin in your Jenkins instance.
 
