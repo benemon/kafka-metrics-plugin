@@ -15,18 +15,23 @@
 
 package com.redhat.ukiservices.jenkins.kafka.job.events;
 
+import com.salesforce.kafka.test.junit4.SharedKafkaTestResource;
 import hudson.model.Result;
-import info.batey.kafka.unit.KafkaUnitRule;
 import net.sf.json.JSONObject;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static junit.framework.Assert.assertEquals;
@@ -36,12 +41,19 @@ public class JobEventsCollectorTest {
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
-    @Rule
-    public KafkaUnitRule kafkaRule = new KafkaUnitRule(5000, 5001);
+    @ClassRule
+    public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
+            .withBrokerProperty("port", "5001")
+            .withBrokerProperty("host.name", "localhost");
+
+    @Before
+    public void beforeTest() throws Exception {
+        kafkaRule.getKafkaTestUtils().getAdminClient().deleteTopics(kafkaRule.getKafkaTestUtils().getTopicNames());
+    }
 
     @Test
     @LocalData
-    public void onStartedTest() throws Exception {
+    public void onStartedTest() {
 
         story.addStep(new Statement() {
 
@@ -53,18 +65,18 @@ public class JobEventsCollectorTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages("metrics", 3);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("metrics", StringDeserializer.class, StringDeserializer.class);
 
                 assertEquals(3, messages.size());
 
-                JSONObject buildStarted = JSONObject.fromObject(messages.get(1));
+                JSONObject buildStarted = JSONObject.fromObject(messages.get(1).value());
             }
         });
     }
 
     @Test
     @LocalData
-    public void onCompletedTestSuccess() throws Exception {
+    public void onCompletedTestSuccess() {
 
         story.addStep(new Statement() {
 
@@ -76,11 +88,11 @@ public class JobEventsCollectorTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages("metrics", 3);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("metrics", StringDeserializer.class, StringDeserializer.class);
 
                 assertEquals(3, messages.size());
 
-                JSONObject buildCompleted = JSONObject.fromObject(messages.get(2));
+                JSONObject buildCompleted = JSONObject.fromObject(messages.get(2).value());
 
                 assertEquals(Result.SUCCESS.toString(), buildCompleted.get("result"));
             }
@@ -89,7 +101,7 @@ public class JobEventsCollectorTest {
 
     @Test
     @LocalData
-    public void onCompletedTestFailure() throws Exception {
+    public void onCompletedTestFailure() {
 
         story.addStep(new Statement() {
 
@@ -101,11 +113,11 @@ public class JobEventsCollectorTest {
 
                 WorkflowRun build = story.j.assertBuildStatus(Result.FAILURE, job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages("metrics", 3);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("metrics", StringDeserializer.class, StringDeserializer.class);
 
                 assertEquals(3, messages.size());
 
-                JSONObject buildCompleted = JSONObject.fromObject(messages.get(2));
+                JSONObject buildCompleted = JSONObject.fromObject(messages.get(2).value());
 
                 assertEquals(Result.FAILURE.toString(), buildCompleted.get("result"));
             }
