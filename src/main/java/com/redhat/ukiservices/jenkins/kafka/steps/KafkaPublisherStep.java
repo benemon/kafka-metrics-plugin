@@ -37,7 +37,7 @@ public class KafkaPublisherStep extends Step {
     }
 
     @Override
-    public StepExecution start(StepContext stepContext) throws Exception {
+    public StepExecution start(StepContext stepContext) {
         return new Execution(topic, payload, stepContext);
     }
 
@@ -75,7 +75,7 @@ public class KafkaPublisherStep extends Step {
         }
 
         @Override
-        protected Void run() throws Exception {
+        protected Void run() {
 
             JSONObject publishedContent = new JSONObject();
             publishedContent.putAll(payload);
