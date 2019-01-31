@@ -15,6 +15,8 @@
 
 package com.redhat.ukiservices.jenkins.kafka.job.events;
 
+import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
+import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
 import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
 import com.redhat.ukiservices.jenkins.kafka.job.base.AbstractKafkaMetricsPluginRunListener;
 import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
@@ -48,25 +50,31 @@ public class JobEventsCollector extends AbstractKafkaMetricsPluginRunListener {
         }
     }
 
-
     private JSONObject generateStartedPayload(Run run, TaskListener listener) {
-        JSONObject startedPayload = new JSONObject();
-
-        startedPayload.put("environment", processEnvironment(run, listener));
-        startedPayload.put("estimatedDuration", run.getEstimatedDuration());
-
+        JSONObject startedPayload = generateBasePayload(run, listener);
+        JSONObject job = startedPayload.getJSONObject(CommonConstants.DATA).getJSONObject(CommonConstants.JOB);
+        job.put(CommonConstants.ESTIMATED_DURATION, run.getEstimatedDuration());
         return startedPayload;
     }
 
     private JSONObject generateCompletedPayload(Run run, TaskListener listener) {
-        JSONObject completedPayload = new JSONObject();
-
-        completedPayload.put("environment", processEnvironment(run, listener));
-        completedPayload.put("estimatedDuration", run.getEstimatedDuration());
-        completedPayload.put("actualDuration", run.getDuration());
-        completedPayload.put("result", run.getResult().toString());
-
+        JSONObject completedPayload = generateBasePayload(run, listener);
+        JSONObject job = completedPayload.getJSONObject(CommonConstants.DATA).getJSONObject(CommonConstants.JOB);
+        job.put(CommonConstants.ESTIMATED_DURATION, run.getEstimatedDuration());
+        job.put(CommonConstants.ACTUAL_DURATION, run.getDuration());
+        job.put(CommonConstants.RESULT, run.getResult().toString());
         return completedPayload;
+    }
+
+    private JSONObject generateBasePayload(Run run, TaskListener listener) {
+        JSONObject payload = new JSONObject();
+        JSONObject data = new JSONObject();
+        JSONObject job = new JSONObject();
+        job.put(CommonConstants.JOB_NAME, this.getJenkinsJobName(run, listener));
+        data.put(CommonConstants.JOB, job);
+        payload.put(CommonConstants.METADATA, createMetadata(PayloadType.JOB, run, listener));
+        payload.put(CommonConstants.DATA, data);
+        return payload;
     }
 }
 

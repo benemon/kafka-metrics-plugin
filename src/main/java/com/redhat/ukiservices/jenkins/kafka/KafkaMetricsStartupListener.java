@@ -15,6 +15,8 @@
 
 package com.redhat.ukiservices.jenkins.kafka;
 
+import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
+import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
 import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
 import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
 import hudson.PluginWrapper;
@@ -29,31 +31,40 @@ import java.util.Optional;
 
 public class KafkaMetricsStartupListener {
 
-    private static final String PROJECT_NAME_ENV = "PROJECT_NAME";
-    private static final String KUBERNETES_NAMESPACE_ENV = "KUBERNETES_NAMESPACE";
-    private static final String APP_NAME_ENV = "APP_NAME";
-
     @Initializer(after = InitMilestone.JOB_LOADED)
     public void onStartup() {
         JSONObject payload = new JSONObject();
-        payload.put("environment", this.processEnvironment());
-        payload.put("plugins", this.processPlugins());
+        payload.put(CommonConstants.METADATA, this.createMetadata());
+
+        JSONObject data = new JSONObject();
+        data.put(CommonConstants.PLUGINS, this.processPlugins());
+        payload.put(CommonConstants.DATA, data);
 
         try (MessageProducer producer = new MessageProducer()) {
             producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), payload.toString());
         }
+    }
 
+    private JSONObject createMetadata() {
+        JSONObject metadata = new JSONObject();
+        metadata.put(CommonConstants.EVENT_TYPE_KEY, PayloadType.REGISTER);
+        metadata.put(CommonConstants.ENVIRONMENT, this.processEnvironment());
+        return metadata;
     }
 
     private JSONObject processEnvironment() {
+        Optional<Jenkins> jenkins = Optional.ofNullable(Jenkins.getInstanceOrNull());
         JSONObject environment = new JSONObject();
         environment.put("version", Jenkins.VERSION);
 
-        String project = System.getenv(PROJECT_NAME_ENV) != null ? System.getenv(PROJECT_NAME_ENV) : System.getenv(KUBERNETES_NAMESPACE_ENV);
-        environment.put("project", project);
+        String jenkinsUrl = jenkins.get().getInstance().getRootUrl();
+        environment.put("jenkinsUrl", jenkinsUrl);
 
-        String appName = System.getenv(APP_NAME_ENV);
-        environment.put("appName", appName);
+        String project = System.getenv(CommonConstants.PROJECT_NAME_ENV) != null ? System.getenv(CommonConstants.PROJECT_NAME_ENV) : System.getenv(CommonConstants.KUBERNETES_NAMESPACE_ENV);
+        environment.put("namespace", project);
+
+        String hostName = System.getenv(CommonConstants.HOSTNAME_ENV);
+        environment.put("hostName", hostName);
 
         return environment;
     }
@@ -72,7 +83,6 @@ public class KafkaMetricsStartupListener {
                 pluginJson.put("displayName", plugin.getDisplayName());
                 pluginJson.put("shortName", plugin.getShortName());
                 pluginJson.put("version", plugin.getVersion());
-
                 plugins.add(pluginJson);
             }
         }

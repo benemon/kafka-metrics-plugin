@@ -49,6 +49,6 @@ public class KafkaMetricsStartupListenerTest {
         List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("metrics", StringDeserializer.class, StringDeserializer.class);
         assertEquals(1, messages.size());
         JSONObject receivedPayload = JSONObject.fromObject(messages.get(0).value());
-        assertEquals(Jenkins.VERSION, receivedPayload.getJSONObject("environment").getString("version"));
+        assertEquals(Jenkins.VERSION, receivedPayload.getJSONObject("metadata").getJSONObject("environment").getString("version"));
     }
 }

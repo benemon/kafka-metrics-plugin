@@ -94,7 +94,7 @@ public class JobEventsCollectorTest {
 
                 JSONObject buildCompleted = JSONObject.fromObject(messages.get(2).value());
 
-                assertEquals(Result.SUCCESS.toString(), buildCompleted.get("result"));
+                assertEquals(Result.SUCCESS.toString(), buildCompleted.getJSONObject("data").getJSONObject("job").get("result"));
             }
         });
     }
@@ -119,7 +119,7 @@ public class JobEventsCollectorTest {
 
                 JSONObject buildCompleted = JSONObject.fromObject(messages.get(2).value());
 
-                assertEquals(Result.FAILURE.toString(), buildCompleted.get("result"));
+                assertEquals(Result.FAILURE.toString(), buildCompleted.getJSONObject("data").getJSONObject("job").get("result"));
             }
         });
     }

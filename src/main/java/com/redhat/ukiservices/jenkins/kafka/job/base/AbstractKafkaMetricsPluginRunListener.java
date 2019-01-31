@@ -15,6 +15,8 @@
 
 package com.redhat.ukiservices.jenkins.kafka.job.base;
 
+import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
+import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
@@ -29,10 +31,6 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
 
     private static final Logger log = Logger.getLogger(AbstractKafkaMetricsPluginRunListener.class.getName());
 
-    private static final String PROJECT_NAME_ENV = "PROJECT_NAME";
-    private static final String KUBERNETES_NAMESPACE_ENV = "KUBERNETES_NAMESPACE";
-    private static final String JENKINS_URL_ENV = "JENKINS_URL";
-    private static final String JOB_NAME_ENV = "JOB_NAME";
 
     /**
      * Wrapper for processEnvironment for the use case where no current TaskListener exist
@@ -45,6 +43,20 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
         return processEnvironment(run, new LogTaskListener(log, Level.INFO));
     }
 
+
+    /**
+     * Get a formatted object containing metadata for the payload
+     *
+     * @return
+     */
+    protected JSONObject createMetadata(PayloadType type, Run run, TaskListener listener) {
+        JSONObject metadata = new JSONObject();
+        metadata.put(CommonConstants.EVENT_TYPE_KEY, type);
+        metadata.put(CommonConstants.ENVIRONMENT, this.processEnvironment(run, listener));
+        return metadata;
+    }
+
+
     /**
      * Get a standard set of environment information in a clean format
      *
@@ -55,11 +67,33 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     protected JSONObject processEnvironment(Run run, TaskListener listener) {
         JSONObject environment = new JSONObject();
         environment.put("version", Jenkins.VERSION);
-        environment.put("jenkinsUrl", getJenkinsUrl(run, listener));
-        environment.put("job", getJenkinsJobName(run, listener));
+        environment.put("jenkinsUrl", this.getJenkinsUrl(run, listener));
         environment.put("namespace", this.getOpenShiftNamespace());
-
+        environment.put("hostname", this.getHostname(run, listener));
         return environment;
+    }
+
+    /**
+     * Get Hostname
+     *
+     * @param run      the Run object
+     * @param listener the Listener object
+     * @return the Hostname
+     */
+    protected String getHostname(Run run, TaskListener listener) {
+        String url = null;
+        try {
+            url = run.getEnvironment(listener).get(CommonConstants.HOSTNAME_ENV);
+
+            // last ditch attempt to get something valid
+            if (url == null) {
+                url = System.getenv(CommonConstants.HOSTNAME_ENV);
+            }
+        } catch (Exception e) {
+            log.warning("Could not retrieve Hostname");
+        }
+
+        return url;
     }
 
     /**
@@ -72,11 +106,11 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     protected String getJenkinsUrl(Run run, TaskListener listener) {
         String url = null;
         try {
-            url = run.getEnvironment(listener).get(JENKINS_URL_ENV);
+            url = run.getEnvironment(listener).get(CommonConstants.JENKINS_URL_ENV);
 
             // last ditch attempt to get something valid
             if (url == null) {
-                url = System.getenv(JENKINS_URL_ENV);
+                url = System.getenv(CommonConstants.JENKINS_URL_ENV);
             }
         } catch (Exception e) {
             log.warning("Could not retrieve Jenkins URL");
@@ -91,7 +125,7 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
      * @return String
      */
     protected String getOpenShiftNamespace() {
-        String project = System.getenv(PROJECT_NAME_ENV) != null ? System.getenv(PROJECT_NAME_ENV) : System.getenv(KUBERNETES_NAMESPACE_ENV);
+        String project = System.getenv(CommonConstants.PROJECT_NAME_ENV) != null ? System.getenv(CommonConstants.PROJECT_NAME_ENV) : System.getenv(CommonConstants.KUBERNETES_NAMESPACE_ENV);
 
         return project;
     }
@@ -106,7 +140,7 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     protected String getJenkinsJobName(Run run, TaskListener listener) {
         String job = null;
         try {
-            job = run.getEnvironment(listener).get(JOB_NAME_ENV);
+            job = run.getEnvironment(listener).get(CommonConstants.JOB_NAME_ENV);
 
             // last ditch attempt to get something valid
             if (job == null) {
@@ -114,7 +148,7 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
 
                 // sigh
                 if (job == null) {
-                    job = System.getenv(JOB_NAME_ENV);
+                    job = System.getenv(CommonConstants.JOB_NAME_ENV);
                 }
             }
 

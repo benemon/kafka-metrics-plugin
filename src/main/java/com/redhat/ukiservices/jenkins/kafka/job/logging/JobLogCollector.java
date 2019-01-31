@@ -15,6 +15,7 @@
 
 package com.redhat.ukiservices.jenkins.kafka.job.logging;
 
+import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
 import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
 import com.redhat.ukiservices.jenkins.kafka.job.base.AbstractKafkaMetricsPluginRunListener;
 import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
@@ -44,9 +45,9 @@ public class JobLogCollector extends AbstractKafkaMetricsPluginRunListener {
 
             while ((sCurrentLine = br.readLine()) != null) {
                 JSONObject line = new JSONObject();
-                line.put("environment", this.processEnvironment(run));
-                line.put("lineNumber", lineNumber++);
-                line.put("message", sCurrentLine);
+                line.put(CommonConstants.ENVIRONMENT, this.processEnvironment(run));
+                line.put(CommonConstants.LOG_LINE_NUMBER, lineNumber++);
+                line.put(CommonConstants.LOG_MESSAGE, sCurrentLine);
                 producer.sendMessage(KafkaMetricsPluginConfig.get().getLogTopic(), line.toString());
             }
         } catch (IOException e) {
