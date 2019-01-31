@@ -99,7 +99,7 @@ public class KafkaPublisherStepTest {
 
                 List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("logs", StringDeserializer.class, StringDeserializer.class);
 
-                assertEquals(6, messages.size());
+                assertEquals(5, messages.size());
 
                 JSONObject obj = JSONObject.fromObject(messages.get(0).value());
 
@@ -138,7 +138,7 @@ public class KafkaPublisherStepTest {
 
                 List<ConsumerRecord<String, String>> defaultMessages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("logs", StringDeserializer.class, StringDeserializer.class);
 
-                assertEquals(13, defaultMessages.size());
+                assertEquals(12, defaultMessages.size());
 
                 JSONObject dObj = JSONObject.fromObject(defaultMessages.get(0).value());
 

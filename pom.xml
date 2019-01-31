@@ -15,12 +15,12 @@
 
     <properties>
         <!-- runtime dependencies -->
-        <jenkins.version>2.121.3</jenkins.version>
+        <jenkins.version>2.138.4</jenkins.version>
         <kafka-unit.version>1.0</kafka-unit.version>
         <kafka-client.version>2.0.0.redhat-00003</kafka-client.version>
 
         <!-- jenkins dependencies -->
-        <workflow-job.version>2.29</workflow-job.version>
+        <workflow-job.version>2.25</workflow-job.version>
         <workflow-step-api.version>2.16</workflow-step-api.version>
 
         <!-- test dependencies -->
@@ -37,9 +37,12 @@
         <jenkins-credentials.version>2.1.17</jenkins-credentials.version>
         <http-core.version>4.5.6</http-core.version>
         <javassist.version>3.21.0-GA</javassist.version>
-        <scm-api.version>2.2.7</scm-api.version>
+        <scm-api.version>2.2.8</scm-api.version>
         <workflow-scm-step.version>2.6</workflow-scm-step.version>
-        <ssh-credentials.version>1.13</ssh-credentials.version>
+        <ssh-credentials.version>1.14</ssh-credentials.version>
+        <workflow-api.version>2.30</workflow-api.version>
+        <workflow-job.version>2.21</workflow-job.version>
+        <workflow-support.version>2.21</workflow-support.version>
     </properties>
 
     <name>Kafka Metrics Plugin :: Jenkins :: Red Hat UKI Presales</name>
@@ -166,6 +169,38 @@
             <version>${workflow-scm-step.version}</version>
             <scope>test</scope>
             <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-api</artifactId>
+            <version>${workflow-api.version}</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-job</artifactId>
+            <version>${workflow-job.version}</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins.workflow</groupId>
+            <artifactId>workflow-support</artifactId>
+            <version>${workflow-support.version}</version>
+            <scope>test</scope>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jenkins-ci.plugins</groupId>
+            <artifactId>credentials</artifactId>
+            <version>${jenkins-credentials.version}</version>
+            <optional>true</optional>
+            <scope>test</scope>
         </dependency>
 
         <dependency>
