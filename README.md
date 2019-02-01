@@ -11,7 +11,7 @@ A set of tasks and steps for Jenkins which publish:
 
 ### Usage
 
-* Requires Minimum Jenkins version of 2.73.x *
+* Requires Minimum Jenkins version of 2.138.x *
 
 `mvn clean package`
 
