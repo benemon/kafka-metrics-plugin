@@ -1,5 +1,5 @@
 package com.redhat.ukiservices.jenkins.kafka.common;
 
 public enum PayloadType {
-    REGISTER, JOB;
+    REGISTER, DEREGISTER,JOB;
 }

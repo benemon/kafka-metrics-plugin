@@ -21,19 +21,14 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.Before;
-import org.junit.ClassRule;
-import org.junit.Rule;
-import org.junit.Test;
+import org.junit.*;
 import org.jvnet.hudson.test.JenkinsRule;
-import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
-public class KafkaMetricsStartupListenerTest {
+public class KafkaMetricsShutdownListenerTest {
 
     @Rule
     public JenkinsRule jenkinsRule = new JenkinsRule();
@@ -43,14 +38,15 @@ public class KafkaMetricsStartupListenerTest {
             .withBrokerProperty("port", "5001")
             .withBrokerProperty("host.name", "localhost");
 
-
     @Test
-    @LocalData
-    public void onStartup() throws Exception {
+    @Ignore
+    public void onShutdown() throws Exception {
         List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("metrics", StringDeserializer.class, StringDeserializer.class);
-        assertEquals(1, messages.size());
-        JSONObject receivedPayload = JSONObject.fromObject(messages.get(0).value());
+        assertEquals(2, messages.size());
+        JSONObject receivedPayload = JSONObject.fromObject(messages.get(1).value());
+        System.out.println(receivedPayload);
         assertEquals(Jenkins.VERSION, receivedPayload.getJSONObject("metadata").getJSONObject("environment").getString("version"));
-        assertEquals(PayloadType.REGISTER, PayloadType.valueOf(receivedPayload.getJSONObject("metadata").getString("type")));
+        assertEquals(PayloadType.DEREGISTER, PayloadType.valueOf(receivedPayload.getJSONObject("metadata").getString("type")));
     }
+
 }

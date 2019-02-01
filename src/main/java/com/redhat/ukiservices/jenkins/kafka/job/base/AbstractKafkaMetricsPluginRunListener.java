@@ -17,6 +17,8 @@ package com.redhat.ukiservices.jenkins.kafka.job.base;
 
 import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
 import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
+import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
+import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
 import hudson.model.Run;
 import hudson.model.TaskListener;
 import hudson.model.listeners.RunListener;
@@ -32,6 +34,17 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     private static final Logger log = Logger.getLogger(AbstractKafkaMetricsPluginRunListener.class.getName());
 
 
+    protected void sendMessage(JSONObject msg) {
+        String topic = KafkaMetricsPluginConfig.get().getMetricsTopic();
+        if ((null != topic) && (topic.length() > 0)) {
+            try (MessageProducer producer = new MessageProducer()) {
+                producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), msg.toString());
+            }
+        } else {
+            log.warning("Metrics Topic not configured.");
+        }
+    }
+
     /**
      * Wrapper for processEnvironment for the use case where no current TaskListener exist
      *
@@ -39,7 +52,6 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
      * @return JSONObject
      */
     protected JSONObject processEnvironment(Run run) {
-
         return processEnvironment(run, new LogTaskListener(log, Level.INFO));
     }
 

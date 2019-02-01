@@ -17,8 +17,6 @@ package com.redhat.ukiservices.jenkins.kafka;
 
 import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
 import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
-import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
-import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
 import hudson.PluginWrapper;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -29,44 +27,18 @@ import net.sf.json.JSONObject;
 import java.util.List;
 import java.util.Optional;
 
-public class KafkaMetricsStartupListener {
+public class KafkaMetricsStartupListener implements DefaultKafkaMetricsListener {
 
     @Initializer(after = InitMilestone.JOB_LOADED)
     public void onStartup() {
         JSONObject payload = new JSONObject();
-        payload.put(CommonConstants.METADATA, this.createMetadata());
+        payload.put(CommonConstants.METADATA, this.createMetadata(PayloadType.REGISTER));
 
         JSONObject data = new JSONObject();
         data.put(CommonConstants.PLUGINS, this.processPlugins());
         payload.put(CommonConstants.DATA, data);
 
-        try (MessageProducer producer = new MessageProducer()) {
-            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), payload.toString());
-        }
-    }
-
-    private JSONObject createMetadata() {
-        JSONObject metadata = new JSONObject();
-        metadata.put(CommonConstants.EVENT_TYPE_KEY, PayloadType.REGISTER);
-        metadata.put(CommonConstants.ENVIRONMENT, this.processEnvironment());
-        return metadata;
-    }
-
-    private JSONObject processEnvironment() {
-        Optional<Jenkins> jenkins = Optional.ofNullable(Jenkins.getInstanceOrNull());
-        JSONObject environment = new JSONObject();
-        environment.put("version", Jenkins.VERSION);
-
-        String jenkinsUrl = jenkins.get().getInstance().getRootUrl();
-        environment.put("jenkinsUrl", jenkinsUrl);
-
-        String project = System.getenv(CommonConstants.PROJECT_NAME_ENV) != null ? System.getenv(CommonConstants.PROJECT_NAME_ENV) : System.getenv(CommonConstants.KUBERNETES_NAMESPACE_ENV);
-        environment.put("namespace", project);
-
-        String hostName = System.getenv(CommonConstants.HOSTNAME_ENV);
-        environment.put("hostName", hostName);
-
-        return environment;
+        this.sendMessage(payload);
     }
 
     private JSONArray processPlugins() {
@@ -86,8 +58,6 @@ public class KafkaMetricsStartupListener {
                 plugins.add(pluginJson);
             }
         }
-
-
         return plugins;
     }
 

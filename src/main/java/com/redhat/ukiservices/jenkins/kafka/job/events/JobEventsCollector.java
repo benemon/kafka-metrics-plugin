@@ -17,9 +17,7 @@ package com.redhat.ukiservices.jenkins.kafka.job.events;
 
 import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
 import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
-import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
 import com.redhat.ukiservices.jenkins.kafka.job.base.AbstractKafkaMetricsPluginRunListener;
-import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
 import hudson.Extension;
 import hudson.model.Run;
 import hudson.model.TaskListener;
@@ -36,19 +34,16 @@ public class JobEventsCollector extends AbstractKafkaMetricsPluginRunListener {
     @Override
     public void onStarted(Run run, TaskListener listener) {
         super.onStarted(run, listener);
-
-        try (MessageProducer producer = new MessageProducer()) {
-            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), generateStartedPayload(run, listener).toString());
-        }
-
+        JSONObject msg = generateStartedPayload(run, listener);
+        sendMessage(msg);
     }
 
     @Override
     public void onCompleted(Run run, @Nonnull TaskListener listener) {
-        try (MessageProducer producer = new MessageProducer()) {
-            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), generateCompletedPayload(run, listener).toString());
-        }
+        JSONObject msg = generateCompletedPayload(run, listener);
+        sendMessage(msg);
     }
+
 
     private JSONObject generateStartedPayload(Run run, TaskListener listener) {
         JSONObject startedPayload = generateBasePayload(run, listener);
