@@ -15,10 +15,8 @@
 
 package com.redhat.ukiservices.jenkins.kafka;
 
-import com.redhat.ukiservices.jenkins.kafka.configuration.KafkaMetricsPluginConfig;
-import com.redhat.ukiservices.jenkins.kafka.optionals.DockerCloudInfo;
-import com.redhat.ukiservices.jenkins.kafka.optionals.KubernetesCloudInfo;
-import com.redhat.ukiservices.jenkins.kafka.producer.MessageProducer;
+import com.redhat.ukiservices.jenkins.kafka.common.CommonConstants;
+import com.redhat.ukiservices.jenkins.kafka.common.PayloadType;
 import hudson.PluginWrapper;
 import hudson.init.InitMilestone;
 import hudson.init.Initializer;
@@ -27,69 +25,39 @@ import net.sf.json.JSONArray;
 import net.sf.json.JSONObject;
 
 import java.util.List;
+import java.util.Optional;
 
-public class KafkaMetricsStartupListener {
-
-    private static final String PROJECT_NAME_ENV = "PROJECT_NAME";
-    private static final String KUBERNETES_NAMESPACE_ENV = "KUBERNETES_NAMESPACE";
+public class KafkaMetricsStartupListener implements DefaultKafkaMetricsListener {
 
     @Initializer(after = InitMilestone.JOB_LOADED)
     public void onStartup() {
         JSONObject payload = new JSONObject();
-        payload.put("environment", this.processEnvironment());
-        payload.put("clouds", this.processClouds());
-        payload.put("plugins", this.processPlugins());
+        payload.put(CommonConstants.METADATA, this.createMetadata(PayloadType.REGISTER));
 
-        try (MessageProducer producer = new MessageProducer()) {
-            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), payload.toString());
-        }
+        JSONObject data = new JSONObject();
+        data.put(CommonConstants.PLUGINS, this.processPlugins());
+        payload.put(CommonConstants.DATA, data);
 
+        this.sendMessage(payload);
     }
-
-    private JSONObject processEnvironment() {
-        JSONObject environment = new JSONObject();
-        environment.put("version", Jenkins.VERSION);
-
-        String project = System.getenv(PROJECT_NAME_ENV) != null ? System.getenv(PROJECT_NAME_ENV) : System.getenv(KUBERNETES_NAMESPACE_ENV);
-        environment.put("project", project);
-
-        return environment;
-    }
-
-    private JSONObject processClouds() {
-        JSONObject clouds = new JSONObject();
-
-        Jenkins.CloudList cloudlist = Jenkins.getInstance().clouds;
-
-        if (Jenkins.getInstance().getPlugin("kubernetes") != null) {
-            JSONArray kubeClouds = new KubernetesCloudInfo().getKubeClouds();
-            clouds.put("kubernetes", kubeClouds);
-        }
-
-        if (Jenkins.getInstance().getPlugin("docker-plugin") != null) {
-            JSONArray dockerClouds = new DockerCloudInfo().getDockerClouds();
-            clouds.put("docker", dockerClouds);
-        }
-
-        return clouds;
-    }
-
 
     private JSONArray processPlugins() {
         JSONArray plugins = new JSONArray();
 
-        List<PluginWrapper> pluginList = Jenkins.getInstance().pluginManager.getPlugins();
+        Optional<Jenkins> jenkins = Optional.ofNullable(Jenkins.getInstanceOrNull());
 
-        for (PluginWrapper plugin : pluginList) {
-            JSONObject pluginJson = new JSONObject();
-            pluginJson.put("longName", plugin.getLongName());
-            pluginJson.put("displayName", plugin.getDisplayName());
-            pluginJson.put("shortName", plugin.getShortName());
-            pluginJson.put("version", plugin.getVersion());
+        if (jenkins.isPresent()) {
+            List<PluginWrapper> pluginList = jenkins.get().getInstance().pluginManager.getPlugins();
 
-            plugins.add(pluginJson);
+            for (PluginWrapper plugin : pluginList) {
+                JSONObject pluginJson = new JSONObject();
+                pluginJson.put("longName", plugin.getLongName());
+                pluginJson.put("displayName", plugin.getDisplayName());
+                pluginJson.put("shortName", plugin.getShortName());
+                pluginJson.put("version", plugin.getVersion());
+                plugins.add(pluginJson);
+            }
         }
-
         return plugins;
     }
 

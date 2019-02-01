@@ -15,16 +15,21 @@
 
 package com.redhat.ukiservices.jenkins.kafka.job.logging;
 
-import info.batey.kafka.unit.KafkaUnitRule;
+import com.salesforce.kafka.test.junit4.SharedKafkaTestResource;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 public class JobLogCollectorTest {
@@ -32,12 +37,20 @@ public class JobLogCollectorTest {
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
-    @Rule
-    public KafkaUnitRule kafkaRule = new KafkaUnitRule(5000, 5001);
+    @ClassRule
+    public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
+            .withBrokerProperty("port", "5001")
+            .withBrokerProperty("host.name", "localhost");
+
+
+    @Before
+    public void beforeTest() throws Exception {
+        kafkaRule.getKafkaTestUtils().getAdminClient().deleteTopics(kafkaRule.getKafkaTestUtils().getTopicNames());
+    }
 
     @Test
     @LocalData
-    public void onFinalizedTest() throws Exception {
+    public void onFinalizedTest() {
 
         story.addStep(new Statement() {
 
@@ -49,7 +62,7 @@ public class JobLogCollectorTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages("logs", 32);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("logs", StringDeserializer.class, StringDeserializer.class);
 
             }
         });

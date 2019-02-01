@@ -15,17 +15,22 @@
 
 package com.redhat.ukiservices.jenkins.kafka.steps;
 
-import info.batey.kafka.unit.KafkaUnitRule;
+import com.salesforce.kafka.test.junit4.SharedKafkaTestResource;
 import net.sf.json.JSONObject;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.apache.kafka.common.serialization.StringDeserializer;
 import org.jenkinsci.plugins.workflow.cps.CpsFlowDefinition;
 import org.jenkinsci.plugins.workflow.job.WorkflowJob;
 import org.jenkinsci.plugins.workflow.job.WorkflowRun;
+import org.junit.Before;
+import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import static net.sf.ezmorph.test.ArrayAssertions.assertEquals;
@@ -38,12 +43,21 @@ public class KafkaPublisherStepTest {
     @Rule
     public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
-    @Rule
-    public KafkaUnitRule kafkaRule = new KafkaUnitRule(5000, 5001);
+    @ClassRule
+    public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
+            .withBrokerProperty("port", "5001")
+            .withBrokerProperty("host.name", "localhost");
+
+
+
+    @Before
+    public void beforeTest() throws Exception {
+        kafkaRule.getKafkaTestUtils().getAdminClient().deleteTopics(kafkaRule.getKafkaTestUtils().getTopicNames());
+    }
 
     @Test
     @LocalData
-    public void testPublishStepCustomTopic() throws Exception {
+    public void testPublishStepCustomTopic() {
 
         story.addStep(new Statement() {
 
@@ -55,11 +69,11 @@ public class KafkaPublisherStepTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages(PUBLISH_TEST_TOPIC, 1);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic(PUBLISH_TEST_TOPIC, StringDeserializer.class, StringDeserializer.class);
 
                 assertEquals(1, messages.size());
 
-                JSONObject obj = JSONObject.fromObject(messages.get(0));
+                JSONObject obj = JSONObject.fromObject(messages.get(0).value());
 
                 assertNotNull(obj);
 
@@ -71,7 +85,7 @@ public class KafkaPublisherStepTest {
 
     @Test
     @LocalData
-    public void testPublishStepDefaultTopic() throws Exception {
+    public void testPublishStepDefaultTopic() {
 
         story.addStep(new Statement() {
 
@@ -83,11 +97,11 @@ public class KafkaPublisherStepTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> messages = kafkaRule.getKafkaUnit().readMessages("logs", 5);
+                List<ConsumerRecord<String, String>> messages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("logs", StringDeserializer.class, StringDeserializer.class);
 
-                assertEquals(5, messages.size());
+                assertEquals(6, messages.size());
 
-                JSONObject obj = JSONObject.fromObject(messages.get(0));
+                JSONObject obj = JSONObject.fromObject(messages.get(0).value());
 
                 assertNotNull(obj);
 
@@ -99,7 +113,7 @@ public class KafkaPublisherStepTest {
 
     @Test
     @LocalData
-    public void testPublishStepParallel() throws Exception {
+    public void testPublishStepParallel() {
 
         story.addStep(new Statement() {
 
@@ -112,21 +126,21 @@ public class KafkaPublisherStepTest {
 
                 WorkflowRun build = story.j.assertBuildStatusSuccess(job.scheduleBuild2(0));
 
-                List<String> customMessages = kafkaRule.getKafkaUnit().readMessages(PUBLISH_TEST_TOPIC, 1);
+                List<ConsumerRecord<String, String>> customMessages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic(PUBLISH_TEST_TOPIC, StringDeserializer.class, StringDeserializer.class);
 
                 assertEquals(1, customMessages.size());
 
-                JSONObject cObj = JSONObject.fromObject(customMessages.get(0));
+                JSONObject cObj = JSONObject.fromObject(customMessages.get(0).value());
 
                 assertNotNull(cObj);
 
                 assertEquals("customPublishContent", cObj.get("message"));
 
-                List<String> defaultMessages = kafkaRule.getKafkaUnit().readMessages("logs", 12);
+                List<ConsumerRecord<String, String>> defaultMessages = kafkaRule.getKafkaTestUtils().consumeAllRecordsFromTopic("logs", StringDeserializer.class, StringDeserializer.class);
 
-                assertEquals(12, defaultMessages.size());
+                assertEquals(13, defaultMessages.size());
 
-                JSONObject dObj = JSONObject.fromObject(defaultMessages.get(0));
+                JSONObject dObj = JSONObject.fromObject(defaultMessages.get(0).value());
 
                 assertNotNull(dObj);
 

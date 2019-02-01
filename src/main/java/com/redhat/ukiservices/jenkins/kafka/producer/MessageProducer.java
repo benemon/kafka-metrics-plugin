@@ -59,7 +59,9 @@ public class MessageProducer implements AutoCloseable {
     @Override
     public void close() {
         if (producer != null) {
+            producer.flush();
             producer.close();
+            log.info("Closed KafkaProducer");
         }
     }
 }

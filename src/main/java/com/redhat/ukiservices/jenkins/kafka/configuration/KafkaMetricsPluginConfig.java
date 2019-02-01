@@ -22,6 +22,7 @@ import net.sf.json.JSONObject;
 import org.apache.kafka.clients.producer.ProducerConfig;
 import org.kohsuke.stapler.StaplerRequest;
 
+import java.util.Optional;
 import java.util.Properties;
 
 @Extension
@@ -61,11 +62,15 @@ public class KafkaMetricsPluginConfig extends GlobalConfiguration {
      * @return the Kafka Configuration, or {@code null} if Jenkins has been shut down
      */
     public static KafkaMetricsPluginConfig get() {
-        Jenkins j = Jenkins.getInstance();
-        KafkaMetricsPluginConfig conf = j.getDescriptorByType(KafkaMetricsPluginConfig.class);
-        if (conf != null) {
-            return conf;
+        Optional<Jenkins> jenkins = Optional.ofNullable(Jenkins.getInstanceOrNull());
+
+        if (jenkins.isPresent()) {
+            KafkaMetricsPluginConfig conf = jenkins.get().getDescriptorByType(KafkaMetricsPluginConfig.class);
+            if (conf != null) {
+                return conf;
+            }
         }
+
         return null;
     }
 
@@ -105,7 +110,7 @@ public class KafkaMetricsPluginConfig extends GlobalConfiguration {
      * {@inheritDoc}
      */
     @Override
-    public boolean configure(StaplerRequest req, JSONObject json) throws FormException {
+    public boolean configure(StaplerRequest req, JSONObject json) {
         req.bindJSON(this, json);
         save();
         return true;
