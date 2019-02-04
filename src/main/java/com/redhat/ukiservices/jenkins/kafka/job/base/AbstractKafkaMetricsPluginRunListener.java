@@ -34,14 +34,47 @@ public abstract class AbstractKafkaMetricsPluginRunListener extends RunListener<
     private static final Logger log = Logger.getLogger(AbstractKafkaMetricsPluginRunListener.class.getName());
 
 
-    protected void sendMessage(JSONObject msg) {
+    /**
+     * Convenience method for sending metrics messages
+     *
+     * @param msg
+     */
+    protected void sendMetricsMessage(JSONObject msg) {
         String topic = KafkaMetricsPluginConfig.get().getMetricsTopic();
         if ((null != topic) && (topic.length() > 0)) {
-            try (MessageProducer producer = new MessageProducer()) {
-                producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), msg.toString());
-            }
+            sendMessage(msg, topic);
         } else {
             log.warning("Metrics Topic not configured.");
+        }
+    }
+
+    /**
+     * Convenience method for sending log messages
+     *
+     * @param msg
+     */
+    protected void sendLogMessage(JSONObject msg) {
+        String topic = KafkaMetricsPluginConfig.get().getLogTopic();
+        if ((null != topic) && (topic.length() > 0)) {
+            sendMessage(msg, topic);
+        } else {
+            log.warning("Logs Topic not configured.");
+        }
+    }
+
+    /**
+     * Send a JSONObject to the specified topic
+     *
+     * @param msg
+     * @param topic
+     */
+    protected void sendMessage(JSONObject msg, String topic) {
+        if ((null != topic) && (topic.length() > 0)) {
+            try (MessageProducer producer = new MessageProducer()) {
+                producer.sendMessage(topic, msg.toString());
+            }
+        } else {
+            log.warning("Topic not configured.");
         }
     }
 

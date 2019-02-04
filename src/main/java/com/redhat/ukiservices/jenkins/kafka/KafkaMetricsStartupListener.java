@@ -47,7 +47,7 @@ public class KafkaMetricsStartupListener implements DefaultKafkaMetricsListener 
         Optional<Jenkins> jenkins = Optional.ofNullable(Jenkins.getInstanceOrNull());
 
         if (jenkins.isPresent()) {
-            List<PluginWrapper> pluginList = jenkins.get().getInstance().pluginManager.getPlugins();
+            List<PluginWrapper> pluginList = jenkins.get().pluginManager.getPlugins();
 
             for (PluginWrapper plugin : pluginList) {
                 JSONObject pluginJson = new JSONObject();

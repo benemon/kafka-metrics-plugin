@@ -35,13 +35,13 @@ public class JobEventsCollector extends AbstractKafkaMetricsPluginRunListener {
     public void onStarted(Run run, TaskListener listener) {
         super.onStarted(run, listener);
         JSONObject msg = generateStartedPayload(run, listener);
-        sendMessage(msg);
+        sendMetricsMessage(msg);
     }
 
     @Override
     public void onCompleted(Run run, @Nonnull TaskListener listener) {
         JSONObject msg = generateCompletedPayload(run, listener);
-        sendMessage(msg);
+        sendMetricsMessage(msg);
     }
 
 

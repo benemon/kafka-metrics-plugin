@@ -12,8 +12,11 @@ import java.util.Optional;
 public interface DefaultKafkaMetricsListener {
 
     default void sendMessage(JSONObject payload) {
-        try (MessageProducer producer = new MessageProducer()) {
-            producer.sendMessage(KafkaMetricsPluginConfig.get().getMetricsTopic(), payload.toString());
+        String topic = KafkaMetricsPluginConfig.get().getMetricsTopic();
+        if ((null != topic) && (topic.length() > 0)) {
+            try (MessageProducer producer = new MessageProducer()) {
+                producer.sendMessage(topic, payload.toString());
+            }
         }
     }
 
