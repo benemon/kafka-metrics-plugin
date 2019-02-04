@@ -21,28 +21,24 @@ import jenkins.model.Jenkins;
 import net.sf.json.JSONObject;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
-import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
 
 public class KafkaMetricsStartupListenerTest {
 
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
-
     @ClassRule
     public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
             .withBrokerProperty("port", "5001")
             .withBrokerProperty("host.name", "localhost");
-
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
 
     @Test
     @LocalData

@@ -29,19 +29,16 @@ import org.junit.runners.model.Statement;
 import org.jvnet.hudson.test.RestartableJenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class JobLogCollectorTest {
-
-    @Rule
-    public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
     @ClassRule
     public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
             .withBrokerProperty("port", "5001")
             .withBrokerProperty("host.name", "localhost");
-
+    @Rule
+    public RestartableJenkinsRule story = new RestartableJenkinsRule();
 
     @Before
     public void beforeTest() throws Exception {

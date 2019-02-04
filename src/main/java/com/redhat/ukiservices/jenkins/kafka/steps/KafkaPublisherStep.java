@@ -76,7 +76,6 @@ public class KafkaPublisherStep extends Step {
 
         @Override
         protected Void run() {
-
             JSONObject publishedContent = new JSONObject();
             publishedContent.putAll(payload);
             String localTopic = topic != null ? topic : KafkaMetricsPluginConfig.get().getLogTopic();
@@ -88,8 +87,6 @@ public class KafkaPublisherStep extends Step {
             } else {
                 log.warning("Destination topic is not configured correctly in either the Pipeline step, or the System. Please check your configuration.");
             }
-
-
             return null;
         }
 

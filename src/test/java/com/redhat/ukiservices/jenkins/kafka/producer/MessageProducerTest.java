@@ -23,7 +23,6 @@ import org.junit.*;
 import org.jvnet.hudson.test.JenkinsRule;
 import org.jvnet.hudson.test.recipes.LocalData;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import static org.junit.Assert.assertEquals;
@@ -31,15 +30,12 @@ import static org.junit.Assert.assertEquals;
 public class MessageProducerTest {
 
     public static final String PRODUCER_TEST_TOPIC = "producer-test";
-
-    @Rule
-    public JenkinsRule jenkinsRule = new JenkinsRule();
-
     @ClassRule
     public static final SharedKafkaTestResource kafkaRule = new SharedKafkaTestResource()
             .withBrokerProperty("port", "5001")
             .withBrokerProperty("host.name", "localhost");
-
+    @Rule
+    public JenkinsRule jenkinsRule = new JenkinsRule();
     private MessageProducer producer;
 
     @Before
