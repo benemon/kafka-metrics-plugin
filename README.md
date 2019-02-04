@@ -23,7 +23,7 @@ Configure using Global System Configuration. Options for the following are provi
 - Metrics Topic - the topic to publish metrics and metadata from Jenkins and its jobs.
 - Logs topic - the topic to publish log file entries from the Jenkins jobs.
 
-* NOTE: There is nothing stopping you from having the same topic defined for both logs and metrics *
+**NOTE: There is nothing stopping you from having the same topic defined for both logs and metrics**
 
 If you do nothing else, you should start to see traffic appear on your topic from your Jenkins instance and its job.
 
@@ -31,7 +31,7 @@ If you want to publish information as part of a Pipeline step, you can use the f
 
 `kafkaPublisher ( topic: <topic>, payload: <payload> )`
 
-The `topic` parameter is optional, and if not provided, will publish payloads to the default logging topic.
+The `topic` parameter is optional, and if not provided, will publish payloads to the generic logging topic, if configured in the System properties.
 
 ### Support
 
