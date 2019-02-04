@@ -79,10 +79,16 @@ public class KafkaPublisherStep extends Step {
 
             JSONObject publishedContent = new JSONObject();
             publishedContent.putAll(payload);
+            String localTopic = topic != null ? topic : KafkaMetricsPluginConfig.get().getLogTopic();
 
-            try (MessageProducer producer = new MessageProducer()) {
-                producer.sendMessage(topic != null ? topic : KafkaMetricsPluginConfig.get().getLogTopic(), publishedContent.toString());
+            if (null != localTopic && localTopic.length() > 0) {
+                try (MessageProducer producer = new MessageProducer()) {
+                    producer.sendMessage(localTopic, publishedContent.toString());
+                }
+            } else {
+                log.warning("Destination topic is not configured correctly in either the Pipeline step, or the System. Please check your configuration.");
             }
+
 
             return null;
         }
