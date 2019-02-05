@@ -1,4 +1,4 @@
-# Kafka Publisher Plugin for Jenkins
+# Kafka Metrics Plugin for Jenkins
 
 ### What is it?
 
